@@ -34,6 +34,9 @@ import java.security.SecureRandom;
 import java.security.spec.ECFieldFp;
 import java.security.spec.EllipticCurve;
 
+/**
+ * 公钥密码算法，国产SM2对标国际RSA
+ */
 public class SM2Util extends GMBaseUtil {
     //////////////////////////////////////////////////////////////////////////////////////
     /*
@@ -46,20 +49,20 @@ public class SM2Util extends GMBaseUtil {
     public final static BigInteger SM2_ECC_N = CURVE.getOrder();
     public final static BigInteger SM2_ECC_H = CURVE.getCofactor();
     public final static BigInteger SM2_ECC_GX = new BigInteger(
-        "32C4AE2C1F1981195F9904466A39C9948FE30BBFF2660BE1715A4589334C74C7", 16);
+            "32C4AE2C1F1981195F9904466A39C9948FE30BBFF2660BE1715A4589334C74C7", 16);
     public final static BigInteger SM2_ECC_GY = new BigInteger(
-        "BC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0", 16);
+            "BC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0", 16);
     public static final ECPoint G_POINT = CURVE.createPoint(SM2_ECC_GX, SM2_ECC_GY);
     public static final ECDomainParameters DOMAIN_PARAMS = new ECDomainParameters(CURVE, G_POINT,
-        SM2_ECC_N, SM2_ECC_H);
+            SM2_ECC_N, SM2_ECC_H);
     public static final int CURVE_LEN = BCECUtil.getCurveLength(DOMAIN_PARAMS);
     //////////////////////////////////////////////////////////////////////////////////////
 
     public static final EllipticCurve JDK_CURVE = new EllipticCurve(new ECFieldFp(SM2_ECC_P), SM2_ECC_A, SM2_ECC_B);
     public static final java.security.spec.ECPoint JDK_G_POINT = new java.security.spec.ECPoint(
-        G_POINT.getAffineXCoord().toBigInteger(), G_POINT.getAffineYCoord().toBigInteger());
+            G_POINT.getAffineXCoord().toBigInteger(), G_POINT.getAffineYCoord().toBigInteger());
     public static final java.security.spec.ECParameterSpec JDK_EC_SPEC = new java.security.spec.ECParameterSpec(
-        JDK_CURVE, JDK_G_POINT, SM2_ECC_N, SM2_ECC_H.intValue());
+            JDK_CURVE, JDK_G_POINT, SM2_ECC_N, SM2_ECC_H.intValue());
 
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -76,7 +79,7 @@ public class SM2Util extends GMBaseUtil {
     }
 
     public static KeyPair generateKeyPair() throws NoSuchProviderException, NoSuchAlgorithmException,
-        InvalidAlgorithmParameterException {
+            InvalidAlgorithmParameterException {
         SecureRandom random = new SecureRandom();
         return BCECUtil.generateKeyPair(DOMAIN_PARAMS, random);
     }
@@ -134,7 +137,7 @@ public class SM2Util extends GMBaseUtil {
      * @throws InvalidCipherTextException
      */
     public static byte[] encrypt(ECPublicKeyParameters pubKeyParameters, byte[] srcData)
-        throws InvalidCipherTextException {
+            throws InvalidCipherTextException {
         return encrypt(Mode.C1C3C2, pubKeyParameters, srcData);
     }
 
@@ -146,7 +149,7 @@ public class SM2Util extends GMBaseUtil {
      * @throws InvalidCipherTextException
      */
     public static byte[] encrypt(Mode mode, ECPublicKeyParameters pubKeyParameters, byte[] srcData)
-        throws InvalidCipherTextException {
+            throws InvalidCipherTextException {
         SM2Engine engine = new SM2Engine(mode);
         ParametersWithRandom pwr = new ParametersWithRandom(pubKeyParameters, new SecureRandom());
         engine.init(true, pwr);
@@ -183,7 +186,7 @@ public class SM2Util extends GMBaseUtil {
      * @throws InvalidCipherTextException
      */
     public static byte[] decrypt(ECPrivateKeyParameters priKeyParameters, byte[] sm2Cipher)
-        throws InvalidCipherTextException {
+            throws InvalidCipherTextException {
         return decrypt(Mode.C1C3C2, priKeyParameters, sm2Cipher);
     }
 
@@ -195,7 +198,7 @@ public class SM2Util extends GMBaseUtil {
      * @throws InvalidCipherTextException
      */
     public static byte[] decrypt(Mode mode, ECPrivateKeyParameters priKeyParameters, byte[] sm2Cipher)
-        throws InvalidCipherTextException {
+            throws InvalidCipherTextException {
         SM2Engine engine = new SM2Engine(mode);
         engine.init(false, priKeyParameters);
         return engine.processBlock(sm2Cipher, 0, sm2Cipher.length);
@@ -233,7 +236,7 @@ public class SM2Util extends GMBaseUtil {
      * @throws Exception
      */
     public static SM2Cipher parseSM2Cipher(int curveLength, int digestLength,
-        byte[] cipherText) throws Exception {
+                                           byte[] cipherText) throws Exception {
         return parseSM2Cipher(Mode.C1C3C2, curveLength, digestLength, cipherText);
     }
 
@@ -247,7 +250,7 @@ public class SM2Util extends GMBaseUtil {
      * @return
      */
     public static SM2Cipher parseSM2Cipher(Mode mode, int curveLength, int digestLength,
-        byte[] cipherText) throws Exception {
+                                           byte[] cipherText) throws Exception {
         byte[] c1 = new byte[curveLength * 2 + 1];
         byte[] c2 = new byte[cipherText.length - c1.length - digestLength];
         byte[] c3 = new byte[digestLength];
@@ -302,7 +305,7 @@ public class SM2Util extends GMBaseUtil {
      * @throws IOException
      */
     public static byte[] encodeSM2CipherToDER(int curveLength, int digestLength, byte[] cipher)
-        throws Exception {
+            throws Exception {
         return encodeSM2CipherToDER(Mode.C1C3C2, curveLength, digestLength, cipher);
     }
 
@@ -315,7 +318,7 @@ public class SM2Util extends GMBaseUtil {
      * @throws Exception
      */
     public static byte[] encodeSM2CipherToDER(Mode mode, int curveLength, int digestLength, byte[] cipher)
-        throws Exception {
+            throws Exception {
 
         byte[] c1x = new byte[curveLength];
         byte[] c1y = new byte[curveLength];
@@ -439,7 +442,7 @@ public class SM2Util extends GMBaseUtil {
      * @throws CryptoException
      */
     public static byte[] sign(ECPrivateKeyParameters priKeyParameters, byte[] withId, byte[] srcData)
-        throws CryptoException {
+            throws CryptoException {
         SM2Signer signer = new SM2Signer();
         CipherParameters param = null;
         ParametersWithRandom pwr = new ParametersWithRandom(priKeyParameters, new SecureRandom());

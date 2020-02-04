@@ -15,8 +15,10 @@ import org.zz.gmhelper.SM2Util;
 import org.zz.gmhelper.test.util.FileUtil;
 
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.util.Arrays;
+import java.util.Base64;
 
 public class SM2UtilTest extends GMBaseTest {
 
@@ -28,13 +30,13 @@ public class SM2UtilTest extends GMBaseTest {
             ECPublicKeyParameters pubKey = (ECPublicKeyParameters) keyPair.getPublic();
 
             System.out.println("Pri Hex:"
-                + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
+                    + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
             System.out.println("Pub X Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
             System.out.println("Pub X Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
             System.out.println("Pub Point Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
 
             byte[] sign = SM2Util.sign(priKey, WITH_ID, SRC_DATA);
             System.out.println("SM2 sign with withId result:\n" + ByteUtils.toHexString(sign));
@@ -58,6 +60,9 @@ public class SM2UtilTest extends GMBaseTest {
         }
     }
 
+    /**
+     * 加解密测试
+     */
     @Test
     public void testEncryptAndDecrypt() {
         try {
@@ -66,21 +71,24 @@ public class SM2UtilTest extends GMBaseTest {
             ECPublicKeyParameters pubKey = (ECPublicKeyParameters) keyPair.getPublic();
 
             System.out.println("Pri Hex:"
-                + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
+                    + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
             System.out.println("Pub X Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
             System.out.println("Pub X Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
             System.out.println("Pub Point Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
 
-            byte[] encryptedData = SM2Util.encrypt(pubKey, SRC_DATA);
+            String sourcePlainText = "qwertyuiopasdfghjklzxcvbnm,.;";
+            byte[] encryptedData = SM2Util.encrypt(pubKey, sourcePlainText.getBytes(Charset.defaultCharset()));
             System.out.println("SM2 encrypt result:\n" + ByteUtils.toHexString(encryptedData));
             byte[] decryptedData = SM2Util.decrypt(priKey, encryptedData);
             System.out.println("SM2 decrypt result:\n" + ByteUtils.toHexString(decryptedData));
-            if (!Arrays.equals(decryptedData, SRC_DATA)) {
-                Assert.fail();
-            }
+            //转换回原数据进行比较
+            String decryptedDataPlainText = new String(decryptedData);
+            Arrays.equals(decryptedData, sourcePlainText.getBytes());
+            Assert.assertEquals(sourcePlainText, decryptedDataPlainText);
+
         } catch (Exception ex) {
             ex.printStackTrace();
             Assert.fail();
@@ -95,21 +103,23 @@ public class SM2UtilTest extends GMBaseTest {
             ECPublicKeyParameters pubKey = (ECPublicKeyParameters) keyPair.getPublic();
 
             System.out.println("Pri Hex:"
-                + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
+                    + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
             System.out.println("Pub X Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
             System.out.println("Pub X Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
             System.out.println("Pub Point Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
 
-            byte[] encryptedData = SM2Util.encrypt(Mode.C1C2C3, pubKey, SRC_DATA);
+            String sourcePlainText = "qwertyuiopasdfghjklzxcvbnm,.;";
+            byte[] encryptedData = SM2Util.encrypt(Mode.C1C2C3, pubKey, sourcePlainText.getBytes());
             System.out.println("SM2 encrypt result:\n" + ByteUtils.toHexString(encryptedData));
             byte[] decryptedData = SM2Util.decrypt(Mode.C1C2C3, priKey, encryptedData);
             System.out.println("SM2 decrypt result:\n" + ByteUtils.toHexString(decryptedData));
-            if (!Arrays.equals(decryptedData, SRC_DATA)) {
-                Assert.fail();
-            }
+            //转换回原数据进行比较
+            String decryptedDataPlainText = new String(decryptedData);
+            Arrays.equals(decryptedData, sourcePlainText.getBytes());
+            Assert.assertEquals(sourcePlainText, decryptedDataPlainText);
         } catch (Exception ex) {
             ex.printStackTrace();
             Assert.fail();
@@ -172,7 +182,7 @@ public class SM2UtilTest extends GMBaseTest {
             byte[] withId = ByteUtils.fromHexString("31323334353637383132333435363738");
 
             ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(
-                new BigInteger(ByteUtils.fromHexString(priHex)), SM2Util.DOMAIN_PARAMS);
+                    new BigInteger(ByteUtils.fromHexString(priHex)), SM2Util.DOMAIN_PARAMS);
             ECPublicKeyParameters pubKey = BCECUtil.createECPublicKeyParameters(xHex, yHex, SM2Util.CURVE, SM2Util.DOMAIN_PARAMS);
 
             if (!SM2Util.verify(pubKey, src, signBytes)) {
@@ -192,13 +202,13 @@ public class SM2UtilTest extends GMBaseTest {
             ECPublicKeyParameters pubKey = (ECPublicKeyParameters) keyPair.getPublic();
 
             System.out.println("Pri Hex:"
-                + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
+                    + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
             System.out.println("Pub X Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
             System.out.println("Pub X Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
             System.out.println("Pub Point Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
+                    + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
         } catch (Exception ex) {
             ex.printStackTrace();
             Assert.fail();
@@ -221,6 +231,9 @@ public class SM2UtilTest extends GMBaseTest {
             if (!Arrays.equals(decryptedData, SRC_DATA)) {
                 Assert.fail();
             }
+            byte[] bytes = FileUtil.readFile("target/derCipher.dat");
+            byte[] decrypt = SM2Util.decrypt(priKey, SM2Util.decodeDERSM2Cipher(bytes));
+            Assert.assertEquals(new String(decrypt),new String(SRC_DATA));
 
             Assert.assertTrue(true);
         } catch (Exception ex) {
