@@ -33,7 +33,7 @@ public class SM2Pkcs12MakerTest {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    private static final char[] TEST_P12_PASSWD = "12345678".toCharArray();
+    private static final char[] TEST_P12_PASSWD = "123123123123123x".toCharArray();
     private static final String TEST_P12_FILENAME = "target/test.p12";
 
     @Test
