@@ -17,7 +17,7 @@ import org.zz.gmhelper.cert.SM2CertUtil;
 import org.zz.gmhelper.cert.SM2PfxMaker;
 import org.zz.gmhelper.cert.SM2PublicKey;
 import org.zz.gmhelper.cert.SM2X509CertMaker;
-import org.zz.gmhelper.test.util.FileUtil;
+import org.zz.gmhelper.util.util.FileUtil;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -38,12 +38,12 @@ public class SM2PfxMakerTest {
             KeyPair subKP = SM2Util.generateKeyPair();
             X500Name subDN = SM2X509CertMakerTest.buildSubjectDN();
             SM2PublicKey sm2SubPub = new SM2PublicKey(subKP.getPublic().getAlgorithm(),
-                (BCECPublicKey) subKP.getPublic());
+                    (BCECPublicKey) subKP.getPublic());
             byte[] csr = CommonUtil.createCSR(subDN, sm2SubPub, subKP.getPrivate(),
-                SM2X509CertMaker.SIGN_ALGO_SM3WITHSM2).getEncoded();
+                    SM2X509CertMaker.SIGN_ALGO_SM3WITHSM2).getEncoded();
             SM2X509CertMaker certMaker = SM2X509CertMakerTest.buildCertMaker();
             X509Certificate cert = certMaker.makeCertificate(false,
-                new KeyUsage(KeyUsage.digitalSignature | KeyUsage.dataEncipherment), csr);
+                    new KeyUsage(KeyUsage.digitalSignature | KeyUsage.dataEncipherment), csr);
 
             SM2PfxMaker pfxMaker = new SM2PfxMaker();
             PKCS10CertificationRequest request = new PKCS10CertificationRequest(csr);
@@ -58,23 +58,18 @@ public class SM2PfxMakerTest {
     }
 
     @Test
-    public void testPfxSign() {
+    public void testPfxSign() throws Exception {
         //先生成一个pfx
         testMakePfx();
 
-        try {
-            byte[] pkcs12 = FileUtil.readFile(TEST_PFX_FILENAME);
-            BCECPublicKey publicKey = SM2CertUtil.getPublicKeyFromPfx(pkcs12, TEST_PFX_PASSWD);
-            BCECPrivateKey privateKey = SM2CertUtil.getPrivateKeyFromPfx(pkcs12, TEST_PFX_PASSWD);
+        byte[] pkcs12 = FileUtil.readFile(TEST_PFX_FILENAME);
+        BCECPublicKey publicKey = SM2CertUtil.getPublicKeyFromPfx(pkcs12, TEST_PFX_PASSWD);
+        BCECPrivateKey privateKey = SM2CertUtil.getPrivateKeyFromPfx(pkcs12, TEST_PFX_PASSWD);
 
-            String srcData = "1234567890123456789012345678901234567890";
-            byte[] sign = SM2Util.sign(privateKey, srcData.getBytes());
-            boolean flag = SM2Util.verify(publicKey, srcData.getBytes(), sign);
-            if (!flag) {
-                Assert.fail();
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        String srcData = "1234567890123456789012345678901234567890";
+        byte[] sign = SM2Util.sign(privateKey, srcData.getBytes());
+        boolean flag = SM2Util.verify(publicKey, srcData.getBytes(), sign);
+        if (!flag) {
             Assert.fail();
         }
     }

@@ -14,7 +14,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.zz.gmhelper.cert.exception.InvalidX500NameException;
+import org.international.encryption.exception.InvalidX500NameException;
 
 import java.security.PrivateKey;
 import java.util.Iterator;

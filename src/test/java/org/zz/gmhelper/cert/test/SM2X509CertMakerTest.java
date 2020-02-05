@@ -9,7 +9,6 @@ import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Assert;
 import org.junit.Test;
 import org.zz.gmhelper.BCECUtil;
 import org.zz.gmhelper.SM2Util;
@@ -18,8 +17,8 @@ import org.zz.gmhelper.cert.CommonUtil;
 import org.zz.gmhelper.cert.RandomSNAllocator;
 import org.zz.gmhelper.cert.SM2PublicKey;
 import org.zz.gmhelper.cert.SM2X509CertMaker;
-import org.zz.gmhelper.cert.exception.InvalidX500NameException;
-import org.zz.gmhelper.test.util.FileUtil;
+import org.international.encryption.exception.InvalidX500NameException;
+import org.zz.gmhelper.util.util.FileUtil;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -36,24 +35,19 @@ public class SM2X509CertMakerTest {
     }
 
     @Test
-    public void testMakeCertificate() {
-        try {
-            KeyPair subKP = SM2Util.generateKeyPair();
-            X500Name subDN = buildSubjectDN();
-            SM2PublicKey sm2SubPub = new SM2PublicKey(subKP.getPublic().getAlgorithm(),
+    public void testMakeCertificate() throws Exception {
+        KeyPair subKP = SM2Util.generateKeyPair();
+        X500Name subDN = buildSubjectDN();
+        SM2PublicKey sm2SubPub = new SM2PublicKey(subKP.getPublic().getAlgorithm(),
                 (BCECPublicKey) subKP.getPublic());
-            byte[] csr = CommonUtil.createCSR(subDN, sm2SubPub, subKP.getPrivate(),
+        byte[] csr = CommonUtil.createCSR(subDN, sm2SubPub, subKP.getPrivate(),
                 SM2X509CertMaker.SIGN_ALGO_SM3WITHSM2).getEncoded();
-            savePriKey("target/test.sm2.pri", (BCECPrivateKey) subKP.getPrivate(),
+        savePriKey("target/test.sm2.pri", (BCECPrivateKey) subKP.getPrivate(),
                 (BCECPublicKey) subKP.getPublic());
-            SM2X509CertMaker certMaker = buildCertMaker();
-            X509Certificate cert = certMaker.makeCertificate(false,
+        SM2X509CertMaker certMaker = buildCertMaker();
+        X509Certificate cert = certMaker.makeCertificate(false,
                 new KeyUsage(KeyUsage.digitalSignature | KeyUsage.dataEncipherment), csr);
-            FileUtil.writeFile("target/test.sm2.cer", cert.getEncoded());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Assert.fail();
-        }
+        FileUtil.writeFile("target/test.sm2.cer", cert.getEncoded());
     }
 
     public static void savePriKey(String filePath, BCECPrivateKey priKey, BCECPublicKey pubKey) throws IOException {
@@ -82,7 +76,7 @@ public class SM2X509CertMakerTest {
     }
 
     public static SM2X509CertMaker buildCertMaker() throws InvalidAlgorithmParameterException,
-        NoSuchAlgorithmException, NoSuchProviderException, InvalidX500NameException {
+            NoSuchAlgorithmException, NoSuchProviderException, InvalidX500NameException {
         X500Name issuerName = buildRootCADN();
         KeyPair issKP = SM2Util.generateKeyPair();
         long certExpire = 20L * 365 * 24 * 60 * 60 * 1000; // 20年
